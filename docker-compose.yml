@@ -1,0 +1,26 @@
+services:
+  audiobook-maker:
+    build: .
+    container_name: audiobook-maker
+    ports:
+      - "7860:7860"
+    volumes:
+      # Аудиофайлы сохраняются на хосте
+      - ./output:/app/output
+      # Кеш модели (чтобы не качать при пересборке)
+      - model_cache:/app/model
+    environment:
+      - TTS_THREADS=4           # Количество потоков CPU для PyTorch
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    restart: unless-stopped
+    # Ограничения ресурсов (опционально)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+volumes:
+  model_cache:

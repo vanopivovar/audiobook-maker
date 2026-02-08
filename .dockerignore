@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+.env
+output/
+*.wav
+*.mp3
+*.ogg
+v5_ru.pt
+venv/
+.venv/
+*.md
+LICENSE
