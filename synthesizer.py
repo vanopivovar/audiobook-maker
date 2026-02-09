@@ -33,8 +33,8 @@ def create_detailed_log(
 
     # Подсчет статистики
     total_files = len(files)
-    successful_files = sum(1 for f in files if "✅" in f["Статус"])
-    failed_files = sum(1 for f in files if "❌" in f["Статус"])
+    successful_files = sum(1 for f in files if "[OK]" in f["Статус"])
+    failed_files = sum(1 for f in files if "[ERROR]" in f["Статус"])
     total_errors = sum(f.get("Ошибки", 0) for f in files)
 
     # Вычисление общего размера
@@ -55,19 +55,19 @@ def create_detailed_log(
     log_content.append("")
 
     # Общая информация
-    log_content.append("📊 ОБЩАЯ СТАТИСТИКА")
+    log_content.append("ОБЩАЯ СТАТИСТИКА")
     log_content.append("-" * 70)
     log_content.append(f"Дата и время: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     log_content.append(f"Общее время выполнения: {total_time:.2f} сек ({total_time/60:.2f} мин)")
     log_content.append(f"Всего файлов: {total_files}")
-    log_content.append(f"  ✅ Успешно: {successful_files}")
-    log_content.append(f"  ❌ Ошибок: {failed_files}")
+    log_content.append(f"  [OK]Успешно: {successful_files}")
+    log_content.append(f"  [ERROR]Ошибок: {failed_files}")
     log_content.append(f"Общий размер: {total_size_mb:.2f} MB")
     log_content.append(f"Количество ошибок при обработке фрагментов: {total_errors}")
     log_content.append("")
 
     # Настройки синтеза
-    log_content.append("⚙️ НАСТРОЙКИ СИНТЕЗА")
+    log_content.append("НАСТРОЙКИ СИНТЕЗА")
     log_content.append("-" * 70)
     log_content.append(f"Голос: {settings.get('voice', 'N/A')}")
     log_content.append(f"Скорость: {settings.get('speed', 'N/A')}x")
@@ -75,7 +75,7 @@ def create_detailed_log(
     log_content.append("")
 
     # Детальная информация о файлах
-    log_content.append("📁 ДЕТАЛЬНАЯ ИНФОРМАЦИЯ О ФАЙЛАХ")
+    log_content.append("[INFO]ДЕТАЛЬНАЯ ИНФОРМАЦИЯ О ФАЙЛАХ")
     log_content.append("-" * 70)
     for i, file in enumerate(files, 1):
         log_content.append(f"\n{i}. {file['Файл']}")
@@ -85,7 +85,7 @@ def create_detailed_log(
         log_content.append(f"   Время обработки: {file['Время']}")
         log_content.append(f"   Обработано фрагментов: {file['Фрагменты']}")
         if file.get('Ошибки', 0) > 0:
-            log_content.append(f"   ⚠️ Ошибок: {file['Ошибки']}")
+            log_content.append(f"   [WARN]Ошибок: {file['Ошибки']}")
 
     log_content.append("")
     log_content.append("=" * 70)
@@ -144,9 +144,9 @@ def preview_voice(speaker_name: str) -> tuple[str, str]:
         )
         segment.export(str(preview_path), format="wav")
 
-        return str(preview_path), f"✅ {speaker_name}"
+        return str(preview_path), f"[OK]{speaker_name}"
     except Exception as e:
-        return None, f"❌ Ошибка: {str(e)}"
+        return None, f"[ERROR]Ошибка: {str(e)}"
 
 
 def synthesize_text(
@@ -166,7 +166,7 @@ def synthesize_text(
     """
 
     if not text or not text.strip():
-        yield None, None, "❌ Введите текст для озвучивания."
+        yield None, None, "[ERROR]Введите текст для озвучивания."
         return
 
     speaker = SPEAKERS.get(speaker_name, "xenia")
@@ -177,7 +177,7 @@ def synthesize_text(
     sentences = split_into_sentences(text)
 
     if not sentences:
-        yield None, None, "❌ Текст не содержит предложений."
+        yield None, None, "[ERROR]Текст не содержит предложений."
         return
 
     # Разбиваем длинные предложения
@@ -187,10 +187,10 @@ def synthesize_text(
 
     total = len(all_chunks)
     log_lines = [
-        f"📖 Найдено фрагментов: {total}",
-        f"🎙 Голос: {speaker_name} ({speaker})",
-        f"⏩ Скорость: {speed}x",
-        f"💿 Формат: {output_format}",
+        f"[INFO]Найдено фрагментов: {total}",
+        f"[INFO]Голос: {speaker_name} ({speaker})",
+        f"[INFO]Скорость: {speed}x",
+        f"[INFO]Формат: {output_format}",
         "",
     ]
 
@@ -235,14 +235,14 @@ def synthesize_text(
                 written_frames += len(audio_int16) + pause_samples
             except Exception as e:
                 failed_chunks += 1
-                log_lines.append(f"⚠️ Ошибка в фрагменте {i+1}/{total}: {str(e)[:100]}")
+                log_lines.append(f"[WARN]Ошибка в фрагменте {i+1}/{total}: {str(e)[:100]}")
                 log_lines.append(f"   Текст: {chunk[:80]}...")
 
                 if failed_chunks > total * 0.3:
                     wav_file.close()
                     temp_wav_path.unlink(missing_ok=True)
                     error_msg = (
-                        f"\n\n❌ Критическая ошибка: слишком много неудачных фрагментов ({failed_chunks}/{total})\n"
+                        f"\n\n[ERROR]Критическая ошибка: слишком много неудачных фрагментов ({failed_chunks}/{total})\n"
                         f"Возможные причины:\n"
                         f"• Текст содержит некорректные символы\n"
                         f"• Недостаточно памяти\n\n"
@@ -258,7 +258,7 @@ def synthesize_text(
 
     if written_frames == 0:
         temp_wav_path.unlink(missing_ok=True)
-        yield None, None, "\n".join(log_lines) + "\n\n❌ Не удалось синтезировать ни одного фрагмента."
+        yield None, None, "\n".join(log_lines) + "\n\n[ERROR]Не удалось синтезировать ни одного фрагмента."
         return
 
     # Формируем итоговый файл
@@ -299,10 +299,10 @@ def synthesize_text(
     file_size_mb = output_path.stat().st_size / (1024 * 1024)
 
     log_lines.extend([
-        f"✅ Готово за {elapsed:.1f} сек",
-        f"🕐 Длительность: {duration_sec:.1f} сек ({duration_sec/60:.1f} мин)",
-        f"📁 Размер: {file_size_mb:.1f} MB",
-        f"💾 Файл: {filename}",
+        f"[OK]Готово за {elapsed:.1f} сек",
+        f"[INFO]Длительность: {duration_sec:.1f} сек ({duration_sec/60:.1f} мин)",
+        f"[INFO]Размер: {file_size_mb:.1f} MB",
+        f"[INFO]Файл: {filename}",
     ])
 
     yield str(output_path), str(output_path), "\n".join(log_lines)
@@ -320,7 +320,7 @@ def synthesize_file(
 ):
     """Синтезирует речь из загруженного файла."""
     if file is None:
-        yield None, None, "❌ Загрузите текстовый файл."
+        yield None, None, "[ERROR]Загрузите текстовый файл."
         return
 
     file_path = file if isinstance(file, str) else file.name
@@ -329,12 +329,12 @@ def synthesize_file(
     text, debug_info = convert_to_text(file_path)
 
     if text is None:
-        error_msg = f"❌ Не удалось извлечь текст из файла.\n\n🔍 Диагностика:\n{debug_info}"
+        error_msg = f"[ERROR]Не удалось извлечь текст из файла.\n\n[DEBUG]Диагностика:\n{debug_info}"
         yield None, None, error_msg
         return
 
     if not text.strip():
-        yield None, None, "❌ Файл пуст."
+        yield None, None, "[ERROR]Файл пуст."
         return
 
     # Если заголовок не задан — берём имя файла

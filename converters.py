@@ -12,7 +12,7 @@ def extract_text_from_pages(file_path: str) -> tuple[str | None, str]:
     try:
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             file_list = zip_ref.namelist()
-            debug.append(f"📦 Архив содержит {len(file_list)} файлов")
+            debug.append(f"[INFO] Архив содержит {len(file_list)} файлов")
             debug.append(f"Первые файлы: {', '.join(file_list[:5])}")
 
             # Проверяем формат
@@ -20,8 +20,8 @@ def extract_text_from_pages(file_path: str) -> tuple[str | None, str]:
             has_xml = any(f.endswith('.xml') for f in file_list)
 
             if has_iwa:
-                debug.append("⚠️ Обнаружен современный формат .iwa (Pages 5.0+)")
-                debug.append("📝 Рекомендация: экспортируйте файл как .txt или .docx")
+                debug.append("[WARN]Обнаружен современный формат .iwa (Pages 5.0+)")
+                debug.append("[INFO]Рекомендация: экспортируйте файл как .txt или .docx")
                 debug.append("   Файл → Экспортировать → Word/Обычный текст")
                 return None, '\n'.join(debug)
 
@@ -33,17 +33,17 @@ def extract_text_from_pages(file_path: str) -> tuple[str | None, str]:
             ]
             for preview_path in preview_txt_paths:
                 if preview_path in file_list:
-                    debug.append(f"✅ Найден {preview_path}")
+                    debug.append(f"[OK]Найден {preview_path}")
                     with zip_ref.open(preview_path) as txt_file:
                         text = txt_file.read().decode('utf-8', errors='ignore')
                         if text.strip():
-                            debug.append(f"✅ Извлечено {len(text)} символов")
+                            debug.append(f"[OK]Извлечено {len(text)} символов")
                             return text, '\n'.join(debug)
 
             # Метод 2: XML файлы (старый формат Pages)
             if has_xml:
                 xml_files = [f for f in file_list if f.endswith('.xml')]
-                debug.append(f"📄 Найдено XML файлов: {len(xml_files)}")
+                debug.append(f"[INFO]Найдено XML файлов: {len(xml_files)}")
 
                 for xml_file in xml_files:
                     try:
@@ -63,12 +63,12 @@ def extract_text_from_pages(file_path: str) -> tuple[str | None, str]:
                                     result = ' '.join(text_parts)
                                     words = [w for w in result.split() if len(w) > 2]
                                     if len(words) > 10:
-                                        debug.append(f"✅ Извлечено из {xml_file}: {len(words)} слов")
+                                        debug.append(f"[OK]Извлечено из {xml_file}: {len(words)} слов")
                                         return ' '.join(words), '\n'.join(debug)
                             except ET.ParseError:
                                 pass
                     except Exception as e:
-                        debug.append(f"⚠️ {xml_file}: {str(e)[:50]}")
+                        debug.append(f"[WARN]{xml_file}: {str(e)[:50]}")
 
             # Метод 3: Текстовые файлы
             txt_files = [f for f in file_list if f.endswith(('.txt', '.text'))]
@@ -78,16 +78,16 @@ def extract_text_from_pages(file_path: str) -> tuple[str | None, str]:
                         with zip_ref.open(file_name) as f:
                             text = f.read().decode('utf-8', errors='ignore')
                             if text.strip():
-                                debug.append(f"✅ Извлечено из {file_name}")
+                                debug.append(f"[OK]Извлечено из {file_name}")
                                 return text, '\n'.join(debug)
                     except Exception:
                         continue
 
-            debug.append("❌ Не найдено подходящих файлов с текстом")
+            debug.append("[ERROR]Не найдено подходящих файлов с текстом")
             return None, '\n'.join(debug)
 
     except Exception as e:
-        debug.append(f"❌ Критическая ошибка: {str(e)}")
+        debug.append(f"[ERROR]Критическая ошибка: {str(e)}")
         return None, '\n'.join(debug)
 
 
@@ -98,7 +98,7 @@ def extract_text_from_docx(file_path: str) -> tuple[str | None, str]:
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             # DOCX - это тоже ZIP архив
             if 'word/document.xml' not in zip_ref.namelist():
-                debug.append("❌ Неверная структура .docx файла")
+                debug.append("[ERROR]Неверная структура .docx файла")
                 return None, '\n'.join(debug)
 
             with zip_ref.open('word/document.xml') as xml_file:
@@ -119,14 +119,14 @@ def extract_text_from_docx(file_path: str) -> tuple[str | None, str]:
 
                 if paragraphs:
                     text = '\n'.join(paragraphs)
-                    debug.append(f"✅ Извлечено {len(paragraphs)} параграфов")
+                    debug.append(f"[OK]Извлечено {len(paragraphs)} параграфов")
                     return text, '\n'.join(debug)
 
-                debug.append("❌ Документ пуст")
+                debug.append("[ERROR]Документ пуст")
                 return None, '\n'.join(debug)
 
     except Exception as e:
-        debug.append(f"❌ Ошибка: {str(e)}")
+        debug.append(f"[ERROR]Ошибка: {str(e)}")
         return None, '\n'.join(debug)
 
 
@@ -137,12 +137,12 @@ def extract_text_from_txt(file_path: str) -> tuple[str | None, str]:
         try:
             with open(file_path, "r", encoding=enc) as f:
                 text = f.read()
-            debug.append(f"✅ Кодировка: {enc}")
+            debug.append(f"[OK]Кодировка: {enc}")
             return text, '\n'.join(debug)
         except (UnicodeDecodeError, UnicodeError):
             continue
 
-    debug.append("❌ Не удалось определить кодировку")
+    debug.append("[ERROR]Не удалось определить кодировку")
     return None, '\n'.join(debug)
 
 
@@ -164,4 +164,4 @@ def convert_to_text(file_path: str) -> tuple[str | None, str]:
     if file_ext in converters:
         return converters[file_ext](file_path)
     else:
-        return None, f"❌ Неподдерживаемый формат: {file_ext}"
+        return None, f"[ERROR]Неподдерживаемый формат: {file_ext}"

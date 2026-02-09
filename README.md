@@ -1,5 +1,12 @@
 # 📚 Audiobook Maker
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
+![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)
+![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
+![TTS](https://img.shields.io/badge/Silero%20TTS-v5-green)
+
+> **EN:** Web application for converting Russian text into audiobooks using Silero TTS v5. Runs locally on CPU, no GPU required. Supports streaming synthesis for long texts, multiple export formats (MP3/WAV/OGG), and Docker deployment.
+
 Веб-приложение для конвертации текста в аудиокниги на русском языке на
 базе **Silero TTS v5**.
 
@@ -95,15 +102,17 @@ pip install -r requirements.txt
 
 Ubuntu:
 
-    sudo apt install ffmpeg
+``` bash
+sudo apt install ffmpeg
+```
 
 Mac:
 
-    brew install ffmpeg
+``` bash
+brew install ffmpeg
+```
 
-Windows:
-
-    скачать с [ffmpeg.org](https://ffmpeg.org/download.html)
+Windows: скачать с [ffmpeg.org](https://ffmpeg.org/download.html)
 
 Запуск:
 

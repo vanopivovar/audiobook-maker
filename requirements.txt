@@ -1,6 +1,6 @@
-torch>=2.0,<3.0
-silero>=0.5
-scipy
-gradio>=5.0
-pydub>=0.25
-numpy<2.0
+torch>=2.0,<2.7
+silero>=0.5,<1.0
+scipy>=1.11,<1.15
+gradio>=5.0,<6.0
+pydub>=0.25,<0.26
+numpy>=1.24,<2.0

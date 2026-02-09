@@ -52,7 +52,7 @@ torch.hub.download_url_to_file( \
     'https://models.silero.ai/models/tts/ru/v5_ru.pt', \
     '/app/model/v5_ru.pt' \
 ); \
-print('✅ Модель скачана')"
+print('Модель скачана')"
 
 # Том для выходных файлов
 VOLUME ["/app/output"]
